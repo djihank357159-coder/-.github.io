@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>園遊會關東煮點餐系統</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
+        }
+        
+        body {
+            background-color: #f8f8f8;
+            color: #333;
+            line-height: 1.5;
+            padding: 10px;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 1rem; /* 基礎字體變大 */
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 12px;
+            background: linear-gradient(135deg, #ff9966, #ff5e62);
+            color: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 2rem; /* 標題變大 */
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 1rem; /* 副標題變大 */
+        }
+        
+        .main-container {
+            display: flex;
+            height: calc(100vh - 100px);
+            gap: 10px;
+        }
+        
+        /* 左边点餐区 */
+        .ordering-section {
+            flex: 0 0 60%;
+            background: white;
+            border-radius: 6px;
+            padding: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 右边订单清单 */
+        .orders-section {
+            flex: 0 0 40%;
+            background: white;
+            border-radius: 6px;
+            padding: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        h2 {
+            color: #ff5e62;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #eee;
+            font-size: 1.5rem; /* 標題變大 */
+        }
+        
+        /* 订单列表样式 */
+        .order-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .order-card {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 12px;
+            background-color: #f9f9f9;
+            position: relative;
+            font-size: 0.95rem; /* 訂單文字變大 */
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        
+        .order-id {
+            color: #ff5e62;
+        }
+        
+        .order-size {
+            color: #333;
+        }
+        
+        .order-ingredients {
+            margin-bottom: 6px;
+        }
+        
+        .order-noodle {
+            font-style: italic;
+            color: #666;
+        }
+        
+        .delete-order {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ff5e62;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 1rem; /* 刪除按鈕變大 */
+            line-height: 1;
+        }
+        
+        /* 点餐区布局 */
+        .menu-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .menu-section {
+            background: #f9f9f9;
+            border-radius: 6px;
+            padding: 12px;
+            border: 1px solid #eee;
+        }
+        
+        .menu-section h3 {
+            color: #ff5e62;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 1.3rem; /* 區塊標題變大 */
+        }
+        
+        /* 套餐大小选项 */
+        .size-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .size-option {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .size-option:hover {
+            border-color: #ff9966;
+        }
+        
+        .size-option.selected {
+            border-color: #ff5e62;
+            background-color: #fff5f5;
+        }
+        
+        .size-option h4 {
+            font-size: 1.1rem; /* 套餐名稱變大 */
+            margin-bottom: 5px;
+        }
+        
+        .size-price {
+            font-weight: bold;
+            color: #ff5e62;
+            font-size: 1rem; /* 價格文字變大 */
+        }
+        
+        /* 配料区域 */
+        .ingredients-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        
+        .ingredient-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem; /* 配料文字變大 */
+        }
+        
+        .ingredient-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .ingredient-item.selected {
+            background-color: #e6f7ff;
+            border-color: #1890ff;
+        }
+        
+        .ingredient-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #f5f5f5;
+        }
+        
+        /* 泡面选项 */
+        .noodle-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .noodle-item {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            font-size: 1rem; /* 泡麵文字變大 */
+        }
+        
+        .noodle-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .noodle-item.selected {
+            background-color: #e6f7ff;
+            border-color: #1890ff;
+        }
+        
+        .noodle-price {
+            font-weight: bold;
+            color: #ff5e62;
+            display: block;
+            margin-top: 4px;
+            font-size: 1rem; /* 泡麵價格變大 */
+        }
+        
+        /* 已选配料计数 */
+        .selected-count {
+            font-size: 1rem; /* 計數文字變大 */
+            color: #666;
+            margin-bottom: 10px;
+            text-align: center;
+            padding: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+        
+        /* 提交按钮和总价 */
+        .order-controls {
+            margin-top: 12px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .order-total {
+            font-weight: bold;
+            font-size: 1.5rem; /* 總價文字變大 */
+            color: #ff5e62;
+        }
+        
+        .submit-button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #ff9966, #ff5e62);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.2rem; /* 提交按鈕文字變大 */
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .submit-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 12px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+            font-size: 1rem; /* 通知文字變大 */
+        }
+        
+        .notification.show {
+            opacity: 1;
+        }
+        
+        .empty-orders {
+            text-align: center;
+            color: #999;
+            padding: 30px;
+            font-size: 1.1rem; /* 空訂單文字變大 */
+        }
+        
+        /* 滚动条样式 */
+        .order-list::-webkit-scrollbar,
+        .menu-sections::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .order-list::-webkit-scrollbar-track,
+        .menu-sections::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .order-list::-webkit-scrollbar-thumb,
+        .menu-sections::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+        
+        .order-list::-webkit-scrollbar-thumb:hover,
+        .menu-sections::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>園遊會關東煮點餐系統</h1>
+        <p class="subtitle">左邊點餐，右邊顯示訂單清單</p>
+    </header>
+    
+    <div class="main-container">
+        <!-- 左边点餐区 -->
+        <div class="ordering-section">
+            <h2>點餐區</h2>
+            <div class="menu-sections">
+                <!-- 套餐选择 -->
+                <div class="menu-section">
+                    <h3>選擇關東煮套餐</h3>
+                    <div class="selected-count" id="selected-count">請先選擇套餐大小</div>
+                    <div class="size-options">
+                        <div class="size-option" data-size="small" data-price="35" data-count="3">
+                            <h4>小份關東煮</h4>
+                            <div class="size-price">35元 (可選3種料)</div>
+                        </div>
+                        <div class="size-option" data-size="medium" data-price="45" data-count="4">
+                            <h4>中份關東煮</h4>
+                            <div class="size-price">45元 (可選4種料)</div>
+                        </div>
+                        <div class="size-option" data-size="large" data-price="55" data-count="5">
+                            <h4>大份關東煮</h4>
+                            <div class="size-price">55元 (可選5種料)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 配料选择 -->
+                <div class="menu-section">
+                    <h3>選擇配料 (可多選)</h3>
+                    <div class="ingredients-grid" id="ingredients-grid">
+                        <!-- 配料选项将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+                
+                <!-- 泡面选择 -->
+                <div class="menu-section">
+                    <h3>代煮泡麵 (35元)</h3>
+                    <div class="noodle-options">
+                        <div class="noodle-item" data-noodle="無" data-price="0">
+                            <span>無泡麵</span>
+                            <span class="noodle-price">0元</span>
+                        </div>
+                        <div class="noodle-item" data-noodle="鮮蝦麵" data-price="35">
+                            <span>統一鮮蝦麵</span>
+                            <span class="noodle-price">35元</span>
+                        </div>
+                        <div class="noodle-item" data-noodle="肉燥麵" data-price="35">
+                            <span>統一肉燥麵</span>
+                            <span class="noodle-price">35元</span>
+                        </div>
+                        <div class="noodle-item" data-noodle="炸醬麵" data-price="35">
+                            <span>威力炸醬麵</span>
+                            <span class="noodle-price">35元</span>
+                        </div>
+                        <div class="noodle-item" data-noodle="排骨雞麵" data-price="35">
+                            <span>排骨雞麵</span>
+                            <span class="noodle-price">35元</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 总价和提交按钮 -->
+            <div class="order-controls">
+                <div class="order-total">總計: <span id="total-price">0</span> 元</div>
+                <button class="submit-button" id="submit-order" disabled>提交訂單</button>
+            </div>
+        </div>
+        
+        <!-- 右边订单清单 -->
+        <div class="orders-section">
+            <h2>訂單清單</h2>
+            <div class="order-list" id="order-list">
+                <div class="empty-orders">尚未有任何訂單，請在左邊點餐</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">訂單提交成功！</div>
+
+    <script>
+        // 配料数据
+        const ingredients = [
+            "貢丸", "甜不辣", "黑輪片", "綜合火鍋料", 
+            "章魚竹輪", "魚丸", "蒟蒻卷", "蟳味棒", 
+            "鑫鑫腸", "金針菇", "香菇", "雪白菇", 
+            "鴻禧菇", "豆皮", "油豆腐", "板豆腐", 
+            "凍豆腐", "海帶結", "米血", "白蘿蔔", 
+            "玉米", "胡蘿蔔", "王子麵"
+        ];
+
+        // 初始化变量
+        let selectedSize = null;
+        let selectedIngredients = [];
+        let selectedNoodle = {name: "無", price: 0};
+        let orders = [];
+        let orderCounter = 1;
+        
+        // DOM元素
+        const sizeOptions = document.querySelectorAll('.size-option');
+        const ingredientsGrid = document.getElementById('ingredients-grid');
+        const noodleItems = document.querySelectorAll('.noodle-item');
+        const orderList = document.getElementById('order-list');
+        const totalPriceElement = document.getElementById('total-price');
+        const submitButton = document.getElementById('submit-order');
+        const selectedCountElement = document.getElementById('selected-count');
+        const notification = document.getElementById('notification');
+
+        // 初始化配料网格
+        ingredients.forEach(ingredient => {
+            const ingredientElement = document.createElement('div');
+            ingredientElement.className = 'ingredient-item disabled';
+            ingredientElement.textContent = ingredient;
+            ingredientElement.addEventListener('click', () => toggleIngredient(ingredient));
+            ingredientsGrid.appendChild(ingredientElement);
+        });
+
+        // 选择套餐大小
+        sizeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // 移除之前的选择
+                sizeOptions.forEach(opt => opt.classList.remove('selected'));
+                // 设置新的选择
+                option.classList.add('selected');
+                
+                selectedSize = {
+                    size: option.dataset.size,
+                    price: parseInt(option.dataset.price),
+                    count: parseInt(option.dataset.count)
+                };
+                
+                // 启用配料选择
+                const ingredientElements = document.querySelectorAll('.ingredient-item');
+                ingredientElements.forEach(element => {
+                    element.classList.remove('disabled');
+                });
+                
+                // 如果已选配料超过新套餐的限制，移除多余的配料
+                if (selectedIngredients.length > selectedSize.count) {
+                    selectedIngredients = selectedIngredients.slice(0, selectedSize.count);
+                    updateIngredientsUI();
+                }
+                
+                // 更新已选配料计数
+                updateSelectedCount();
+                // 更新总价
+                updateTotalPrice();
+            });
+        });
+
+        // 切换配料选择
+        function toggleIngredient(ingredient) {
+            if (!selectedSize) {
+                showNotification('請先選擇套餐大小');
+                return;
+            }
+            
+            const index = selectedIngredients.indexOf(ingredient);
+            
+            if (index === -1) {
+                // 检查是否已达到最大选择数量
+                if (selectedIngredients.length >= selectedSize.count) {
+                    showNotification(`您只能選擇 ${selectedSize.count} 種配料`);
+                    return;
+                }
+                selectedIngredients.push(ingredient);
+            } else {
+                selectedIngredients.splice(index, 1);
+            }
+            
+            // 更新UI
+            updateIngredientsUI();
+            updateSelectedCount();
+            updateTotalPrice();
+        }
+
+        // 更新配料UI
+        function updateIngredientsUI() {
+            const ingredientElements = document.querySelectorAll('.ingredient-item');
+            ingredientElements.forEach(element => {
+                if (selectedIngredients.includes(element.textContent)) {
+                    element.classList.add('selected');
+                } else {
+                    element.classList.remove('selected');
+                }
+                
+                // 如果已经达到最大选择数量，禁用未选择的配料
+                if (selectedSize && selectedIngredients.length >= selectedSize.count && 
+                    !selectedIngredients.includes(element.textContent)) {
+                    element.classList.add('disabled');
+                } else {
+                    element.classList.remove('disabled');
+                }
+            });
+        }
+
+        // 更新已选配料计数
+        function updateSelectedCount() {
+            if (selectedSize) {
+                selectedCountElement.textContent = `已選擇 ${selectedIngredients.length} / ${selectedSize.count} 種配料`;
+            } else {
+                selectedCountElement.textContent = '請先選擇套餐大小';
+            }
+        }
+
+        // 选择泡面
+        noodleItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // 移除之前的选择
+                noodleItems.forEach(noodle => noodle.classList.remove('selected'));
+                // 设置新的选择
+                item.classList.add('selected');
+                
+                selectedNoodle = {
+                    name: item.dataset.noodle,
+                    price: parseInt(item.dataset.price)
+                };
+                updateTotalPrice();
+            });
+        });
+
+        // 更新总价
+        function updateTotalPrice() {
+            let totalPrice = 0;
+            
+            // 添加套餐价格
+            if (selectedSize) {
+                totalPrice += selectedSize.price;
+            }
+            
+            // 添加泡面价格
+            if (selectedNoodle) {
+                totalPrice += selectedNoodle.price;
+            }
+            
+            // 更新总价显示
+            totalPriceElement.textContent = totalPrice;
+            
+            // 启用或禁用提交按钮
+            submitButton.disabled = !(selectedSize && selectedIngredients.length > 0);
+        }
+
+        // 提交订单
+        submitButton.addEventListener('click', () => {
+            if (!selectedSize || selectedIngredients.length === 0) {
+                showNotification('請選擇套餐和至少一種配料');
+                return;
+            }
+            
+            // 创建新订单
+            let sizeName = '';
+            switch(selectedSize.size) {
+                case 'small': sizeName = '小份關東煮'; break;
+                case 'medium': sizeName = '中份關東煮'; break;
+                case 'large': sizeName = '大份關東煮'; break;
+            }
+            
+            const newOrder = {
+                id: orderCounter,
+                size: sizeName,
+                ingredients: [...selectedIngredients],
+                noodle: selectedNoodle.name,
+                total: parseInt(totalPriceElement.textContent)
+            };
+            
+            orders.push(newOrder);
+            orderCounter++;
+            
+            // 更新订单列表
+            updateOrderList();
+            
+            // 显示成功消息
+            showNotification('訂單提交成功！');
+            
+            // 重置当前订单
+            resetCurrentOrder();
+        });
+
+        // 更新订单列表
+        function updateOrderList() {
+            orderList.innerHTML = '';
+            
+            if (orders.length === 0) {
+                orderList.innerHTML = '<div class="empty-orders">尚未有任何訂單，請在左邊點餐</div>';
+                return;
+            }
+            
+            orders.forEach(order => {
+                const orderCard = document.createElement('div');
+                orderCard.className = 'order-card';
+                
+                orderCard.innerHTML = `
+                    <button class="delete-order" data-id="${order.id}">×</button>
+                    <div class="order-header">
+                        <span class="order-id">第${order.id}單</span>
+                        <span class="order-size">${order.size}</span>
+                    </div>
+                    <div class="order-ingredients">配料: ${order.ingredients.join(', ')}</div>
+                    <div class="order-noodle">代煮泡麵: ${order.noodle}</div>
+                    <div class="order-total" style="margin-top: 8px; text-align: right; font-weight: bold;">總計: ${order.total}元</div>
+                `;
+                
+                orderList.appendChild(orderCard);
+            });
+            
+            // 添加删除订单事件监听
+            document.querySelectorAll('.delete-order').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const orderId = parseInt(e.target.dataset.id);
+                    deleteOrder(orderId);
+                });
+            });
+        }
+
+        // 删除订单
+        function deleteOrder(orderId) {
+            orders = orders.filter(order => order.id !== orderId);
+            updateOrderList();
+            showNotification('訂單已刪除');
+        }
+
+        // 重置当前订单
+        function resetCurrentOrder() {
+            // 清除选择
+            selectedSize = null;
+            selectedIngredients = [];
+            selectedNoodle = {name: "無", price: 0};
+            
+            // 更新UI
+            sizeOptions.forEach(opt => opt.classList.remove('selected'));
+            
+            // 禁用配料选择
+            const ingredientElements = document.querySelectorAll('.ingredient-item');
+            ingredientElements.forEach(element => {
+                element.classList.add('disabled');
+                element.classList.remove('selected');
+            });
+            
+            // 设置默认泡面选择
+            noodleItems.forEach(noodle => {
+                if (noodle.dataset.noodle === "無") {
+                    noodle.classList.add('selected');
+                } else {
+                    noodle.classList.remove('selected');
+                }
+            });
+            
+            updateSelectedCount();
+            updateTotalPrice();
+        }
+
+        // 显示通知
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', () => {
+            // 默认选择"无泡面"
+            document.querySelector('.noodle-item[data-noodle="無"]').classList.add('selected');
+            
+            // 初始化订单列表
+            updateOrderList();
+        });
+    </script>
+</body>
+</html>
